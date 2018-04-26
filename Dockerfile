@@ -16,10 +16,10 @@ RUN useradd -r -u 150 -g mail -d /var/mail/vhosts -m -s /sbin/nologin -c "Virtua
 
 
 # Dovecot config
-ADD ./dovecot.conf /etc/dovecot/conf.d/99-groupoffice.conf
+ADD ./etc/dovecot/conf.d/99-groupoffice.conf /etc/dovecot/conf.d/99-groupoffice.conf
 RUN sed -i 's/{postmaster}/'$POSTMASTER_EMAIL'/' /etc/dovecot/conf.d/99-groupoffice.conf
 
-ADD ./dovecot-sql.conf.ext /etc/dovecot/dovecot-sql.conf.ext
+ADD ./etc/dovecot/dovecot-sql.conf.ext /etc/dovecot/dovecot-sql.conf.ext
 RUN sed -i 's/{dbHost}/'$MYSQL_HOST'/' /etc/dovecot/dovecot-sql.conf.ext && \
  sed -i 's/{dbName}/'$MYSQL_DATABASE'/' /etc/dovecot/dovecot-sql.conf.ext && \
  sed -i 's/{dbUser}/'$MYSQL_PASSWORD'/' /etc/dovecot/dovecot-sql.conf.ext && \
