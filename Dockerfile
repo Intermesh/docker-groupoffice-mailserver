@@ -14,7 +14,6 @@ RUN apt-get install -y postfix postfix-mysql dovecot-imapd dovecot-mysql dovecot
 #Add user for mail handling
 RUN useradd -r -u 150 -g mail -d /var/mail/vhosts -m -s /sbin/nologin -c "Virtual Mailbox" vmail
 
-
 # Dovecot config
 ADD ./etc/dovecot/conf.d/99-groupoffice.conf /etc/dovecot/conf.d/99-groupoffice.conf
 RUN sed -i 's/{postmaster}/'$POSTMASTER_EMAIL'/' /etc/dovecot/conf.d/99-groupoffice.conf
