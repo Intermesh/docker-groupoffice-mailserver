@@ -96,7 +96,7 @@ additional_conditions = and active = '1'" > /etc/postfix/mysql_virtual_mailbox_m
 
 
 # Use supervisor to run multiple services in docker
-ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf 
+ADD /etc/supervisor/conf.d/supervisord.conf /etc/supervisor/conf.d/supervisord.conf 
 
 EXPOSE 25
 EXPOSE 143
