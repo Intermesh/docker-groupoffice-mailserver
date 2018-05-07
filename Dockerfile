@@ -106,7 +106,7 @@ EXPOSE 4190
 
 
 
-RUN mkdir /var/mail/vhosts && chown vmail:mail /var/mail/vhosts
+RUN mkdir -p /var/mail/vhosts && chown vmail:mail /var/mail/vhosts
 VOLUME /var/mail/vhosts
 
 ENTRYPOINT ["/usr/bin/supervisord"]
