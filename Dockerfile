@@ -1,6 +1,6 @@
 FROM debian:stretch-slim
 
-VOLUME /var/mail/vhosts
+
 
 ENV MYSQL_USER groupoffice
 ENV MYSQL_PASSWORD groupoffice
@@ -103,6 +103,11 @@ EXPOSE 143
 EXPOSE 587
 EXPOSE 993
 EXPOSE 4190
+
+
+
+RUN mkdir /var/mail/vhosts && chown vmail:mail /var/mail/vhosts
+VOLUME /var/mail/vhosts
 
 ENTRYPOINT ["/usr/bin/supervisord"]
 #CMD /bin/bash
