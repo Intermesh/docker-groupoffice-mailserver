@@ -109,5 +109,10 @@ EXPOSE 4190
 RUN mkdir -p /var/mail/vhosts && chown vmail:mail /var/mail/vhosts
 VOLUME /var/mail/vhosts
 
+# forward request and error logs to docker log collector
+RUN ln -sf /dev/stdout /var/log/mail.log
+
+#&& ln -sf /dev/stderr /var/log/mail.err
+
 ENTRYPOINT ["/usr/bin/supervisord"]
 #CMD /bin/bash
