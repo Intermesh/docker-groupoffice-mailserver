@@ -27,6 +27,11 @@ RUN sed -i 's/{dbHost}/'$MYSQL_HOST'/' /etc/dovecot/dovecot-sql.conf.ext && \
 #disable default system auth because it slows down the login
 RUN sed -i 's/!include auth-system.conf.ext/#!include auth-system.conf.ext/' /etc/dovecot/conf.d/10-auth.conf
 
+#IMAP Acl
+RUN mkdir -p /var/lib/dovecot/db && \
+  touch /var/lib/dovecot/db/shared-mailboxes.db && \
+  chown -R vmail:mail /var/lib/dovecot/db
+
 # Postfix config
 RUN cp /etc/hostname /etc/mailname
 
