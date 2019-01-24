@@ -112,6 +112,8 @@ EXPOSE 4190
 
 
 RUN mkdir -p /var/mail/vhosts && chown vmail:mail /var/mail/vhosts
+ADD ./var/mail/vhosts/default.sieve /var/mail/vhosts/default.sieve
+
 VOLUME /var/mail/vhosts
 
 #&& ln -sf /dev/stderr /var/log/mail.err
