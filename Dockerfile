@@ -9,20 +9,14 @@ ENV MYSQL_HOST db
 ENV POSTMASTER_EMAIL postmaster@example.com
 
 RUN apt-get update
-RUN apt-get install -y postfix postfix-mysql dovecot-imapd dovecot-mysql dovecot-lmtpd dovecot-sieve dovecot-managesieved supervisor bash rsyslog
+RUN apt-get install -y postfix postfix-mysql dovecot-imapd dovecot-mysql dovecot-lmtpd dovecot-sieve dovecot-managesieved supervisor bash rsyslog nano
 
 #Add user for mail handling
 RUN useradd -r -u 150 -g mail -d /var/mail/vhosts -m -s /sbin/nologin -c "Virtual Mailbox" vmail
 
 # Dovecot config
-ADD ./etc/dovecot/conf.d/99-groupoffice.conf /etc/dovecot/conf.d/99-groupoffice.conf
-RUN sed -i 's/{postmaster}/'$POSTMASTER_EMAIL'/' /etc/dovecot/conf.d/99-groupoffice.conf
-
-ADD ./etc/dovecot/dovecot-sql.conf.ext /etc/dovecot/dovecot-sql.conf.ext
-RUN sed -i 's/{dbHost}/'$MYSQL_HOST'/' /etc/dovecot/dovecot-sql.conf.ext && \
- sed -i 's/{dbName}/'$MYSQL_DATABASE'/' /etc/dovecot/dovecot-sql.conf.ext && \
- sed -i 's/{dbUser}/'$MYSQL_PASSWORD'/' /etc/dovecot/dovecot-sql.conf.ext && \
- sed -i 's/{dbPass}/'$MYSQL_USER'/' /etc/dovecot/dovecot-sql.conf.ext
+ADD ./etc/dovecot/conf.d/99-groupoffice.conf.tpl /etc/dovecot/conf.d/99-groupoffice.conf.tpl
+ADD ./etc/dovecot/dovecot-sql.conf.ext.tpl /etc/dovecot/dovecot-sql.conf.ext.tpl
 
 #disable default system auth because it slows down the login
 RUN sed -i 's/!include auth-system.conf.ext/#!include auth-system.conf.ext/' /etc/dovecot/conf.d/10-auth.conf
@@ -70,35 +64,7 @@ postconf -P "submission/inet/smtpd_sasl_local_domain=$myhostname" && \
 postconf -P "submission/inet/smtpd_sasl_auth_enable=yes" && \
 postconf -P "submission/inet/milter_macro_daemon_name=ORIGINATING" && \
 postconf -P "submission/inet/smtpd_client_restrictions=permit_sasl_authenticated,reject" && \
-postconf -P "submission/inet/smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject" && \
-echo "user = ${MYSQL_USER}\n\
-password = ${MYSQL_PASSWORD}\n\
-hosts = ${MYSQL_HOST}\n\
-dbname = ${MYSQL_DATABASE}\n\
-table = pa_aliases\n\
-select_field = goto\n\
-where_field = address\n\
-additional_conditions = and active = '1'" > /etc/postfix/mysql_virtual_alias_maps.cf && \
-echo "user = ${MYSQL_USER}\n\
-password = ${MYSQL_PASSWORD}\n\
-hosts = ${MYSQL_HOST}\n\
-dbname = ${MYSQL_DATABASE}\n\
-table = pa_domains\n\
-select_field = domain\n\
-where_field = domain\n\
-additional_conditions = and backupmx = '0' and active = '1'" > /etc/postfix/mysql_virtual_mailbox_domains.cf && \
-echo "user = ${MYSQL_USER}\n\
-password = ${MYSQL_PASSWORD}\n\
-hosts = ${MYSQL_HOST}\n\
-dbname = ${MYSQL_DATABASE}\n\
-table = pa_mailboxes\n\
-select_field = maildir\n\
-where_field = username\n\
-additional_conditions = and active = '1'" > /etc/postfix/mysql_virtual_mailbox_maps.cf
-
-
-	
-
+postconf -P "submission/inet/smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject"
 
 # Use supervisor to run multiple services in docker
 ADD ./etc/supervisor/conf.d/supervisord.conf /etc/supervisor/conf.d/supervisord.conf 
@@ -110,7 +76,6 @@ EXPOSE 993
 EXPOSE 4190
 
 
-
 RUN mkdir -p /var/mail/vhosts && chown vmail:mail /var/mail/vhosts
 ADD ./var/mail/vhosts/default.sieve /var/mail/vhosts/default.sieve
 
@@ -118,5 +83,7 @@ VOLUME /var/mail/vhosts
 
 #&& ln -sf /dev/stderr /var/log/mail.err
 
-ENTRYPOINT ["/usr/bin/supervisord"]
+COPY docker-entrypoint.sh /usr/local/bin/
+
+ENTRYPOINT ["docker-entrypoint.sh"]
 #CMD /bin/bash
