@@ -4,8 +4,8 @@ set -e
 cp /etc/dovecot/dovecot-sql.conf.ext.tpl /etc/dovecot/dovecot-sql.conf.ext
 sed -i 's/{dbHost}/'$MYSQL_HOST'/' /etc/dovecot/dovecot-sql.conf.ext && \
 sed -i 's/{dbName}/'$MYSQL_DATABASE'/' /etc/dovecot/dovecot-sql.conf.ext && \
-sed -i 's/{dbUser}/'$MYSQL_PASSWORD'/' /etc/dovecot/dovecot-sql.conf.ext && \
-sed -i 's/{dbPass}/'$MYSQL_USER'/' /etc/dovecot/dovecot-sql.conf.ext
+sed -i 's/{dbUser}/'$MYSQL_USER'/' /etc/dovecot/dovecot-sql.conf.ext && \
+sed -i 's/{dbPass}/'$MYSQL_PASSWORD'/' /etc/dovecot/dovecot-sql.conf.ext
 
 cp /etc/dovecot/conf.d/99-groupoffice.conf.tpl /etc/dovecot/conf.d/99-groupoffice.conf
 sed -i 's/{postmaster}/'$POSTMASTER_EMAIL'/' /etc/dovecot/conf.d/99-groupoffice.conf

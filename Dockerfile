@@ -1,7 +1,5 @@
 FROM debian:stretch-slim
 
-
-
 ENV MYSQL_USER groupoffice
 ENV MYSQL_PASSWORD groupoffice
 ENV MYSQL_DATABASE groupoffice
