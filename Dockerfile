@@ -1,4 +1,4 @@
-FROM debian:stretch-slim
+FROM debian:buster-slim
 
 ENV MYSQL_USER groupoffice
 ENV MYSQL_PASSWORD groupoffice
