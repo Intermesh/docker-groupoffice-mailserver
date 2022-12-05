@@ -7,7 +7,7 @@ ENV MYSQL_HOST db
 ENV POSTMASTER_EMAIL postmaster@example.com
 
 RUN apt-get update
-RUN apt-get install -y postfix postfix-mysql dovecot-imapd dovecot-mysql dovecot-lmtpd dovecot-sieve dovecot-managesieved supervisor bash rsyslog nano
+RUN apt-get install -y postfix postfix-mysql dovecot-imapd dovecot-mysql dovecot-lmtpd dovecot-sieve dovecot-managesieved dovecot-solr supervisor bash rsyslog nano
 
 #Add user for mail handling
 RUN useradd -r -u 150 -g mail -d /var/mail/vhosts -m -s /sbin/nologin -c "Virtual Mailbox" vmail
@@ -62,7 +62,12 @@ postconf -P "submission/inet/smtpd_sasl_local_domain=$myhostname" && \
 postconf -P "submission/inet/smtpd_sasl_auth_enable=yes" && \
 postconf -P "submission/inet/milter_macro_daemon_name=ORIGINATING" && \
 postconf -P "submission/inet/smtpd_client_restrictions=permit_sasl_authenticated,reject" && \
-postconf -P "submission/inet/smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject"
+postconf -P "submission/inet/smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject" && \
+postconf -M subcleanup/unix="subcleanup   unix n    -       -       -       0       cleanup" && \
+postconf -P "subcleanup/unix/header_checks=regexp:/etc/postfix/submission_header_checks" && \
+postconf -P "submission/inet/cleanup_service_name=subcleanup"
+
+#header checks above will hide client IP and domain from outgoing mails
 
 # Use supervisor to run multiple services in docker
 ADD ./etc/supervisor/conf.d/supervisord.conf /etc/supervisor/conf.d/supervisord.conf 

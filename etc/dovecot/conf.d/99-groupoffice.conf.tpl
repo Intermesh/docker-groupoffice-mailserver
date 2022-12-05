@@ -210,5 +210,8 @@ plugin {
   #quota = fs:User quota
 	
   acl = vfile
-	acl_shared_dict = file:/var/lib/dovecot/db/shared-mailboxes.db
+  acl_shared_dict = file:/var/lib/dovecot/db/shared-mailboxes.db
+
+  fts=solr
+  fts_solr = url=http://localhost/8983/solr/dovecot/
 }
