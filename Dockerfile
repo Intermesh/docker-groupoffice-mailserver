@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 ENV MYSQL_USER groupoffice
 ENV MYSQL_PASSWORD groupoffice
@@ -27,8 +27,15 @@ RUN mkdir -p /var/lib/dovecot/db && \
 # Postfix config
 RUN cp /etc/hostname /etc/mailname
 
+ADD ./etc/postfix/submission_header_checks /etc/postfix/submission_header_checks
+
 # SASL settings
-# This will make Postfix authenticate users via Dovecot. Users mail clients will connect directly to Postfix for sending mail and we need them to authenticate.
+# This will make Postfix authenticate users via Dovecot. Users mail clients will 
+# connect directly to Postfix for sending mail and we need them to authenticate.
+
+# About submission_header_checks:
+# https://askubuntu.com/questions/78163/when-sending-email-with-postfix-how-can-i-hide-the-sender-s-ip-and-username-in
+
 RUN postconf -e 'smtpd_sasl_auth_enable = yes' && \
 postconf -e 'smtpd_sasl_type = dovecot' && \
 postconf -e 'smtpd_sasl_path = private/auth' && \
@@ -65,6 +72,8 @@ postconf -P "submission/inet/smtpd_client_restrictions=permit_sasl_authenticated
 postconf -P "submission/inet/smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject" && \
 postconf -M subcleanup/unix="subcleanup   unix n    -       -       -       0       cleanup" && \
 postconf -P "subcleanup/unix/header_checks=regexp:/etc/postfix/submission_header_checks" && \
+postconf -P "submission/inet/smtpd_client_message_rate_limit=2" && \
+postconf -P "submission/inet/anvil_rate_time_unit=60s" && \
 postconf -P "submission/inet/cleanup_service_name=subcleanup"
 
 #header checks above will hide client IP and domain from outgoing mails

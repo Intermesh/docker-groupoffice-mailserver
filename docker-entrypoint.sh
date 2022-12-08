@@ -37,4 +37,4 @@ select_field = maildir\n\
 where_field = username\n\
 additional_conditions = and active = '1'" > /etc/postfix/mysql_virtual_mailbox_maps.cf
 
-/usr/bin/supervisord
+/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
