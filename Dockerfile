@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 ENV MYSQL_USER groupoffice
 ENV MYSQL_PASSWORD groupoffice

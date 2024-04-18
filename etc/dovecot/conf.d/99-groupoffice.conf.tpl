@@ -1,7 +1,9 @@
 #Enable IMAP
 protocols = imap lmtp sieve
 
-#Listen on all IP addresses
+default_vsz_limit = 2G
+
+#Enable the line below to enable external access for IMAP
 listen = *
 
 #configure the location of our virtual mailboxes
@@ -46,15 +48,14 @@ mail_fsync = never
 lda_mailbox_autocreate = yes
 
 # Should automatically created mailboxes be also automatically subscribed?
-# This is useful when there are sieve rules pointing to non existent folders 
+# This is useful when there are sieve rules pointing to non existent folders
 # when they have been moved. The folder will reappear instead of staying invisble to the user
 lda_mailbox_autosubscribe = yes
-
 
 protocol lda {
   # Space separated list of plugins to load (default is global mail_plugins).
   mail_plugins = $mail_plugins quota sieve
-  # Enable fsyncing for LDA
+# Enable fsyncing for LDA
   mail_fsync = optimized
 }
 
@@ -64,7 +65,7 @@ protocol imap {
 
 protocol lmtp {
   postmaster_address = {postmaster}   # required
-  mail_plugins = quota sieve  
+  mail_plugins = quota sieve
   # Enable fsyncing for LMTP
   mail_fsync = optimized
 }
@@ -116,8 +117,7 @@ namespace inbox {
   #mailbox virtual/Flagged {
   #  special_use = \Flagged
   #}
-}  
-
+}
 
 namespace {
 	type = shared
@@ -131,7 +131,6 @@ namespace {
 	list = children
 }
 
-
 service imap-login {
   inet_listener imap {
     #port = 143
@@ -144,13 +143,13 @@ service imap-login {
   # Number of connections to handle before starting a new process. Typically
   # the only useful values are 0 (unlimited) or 1. 1 is more secure, but 0
   # is faster. <doc/wiki/LoginProcess.txt>
-  #service_count = 1
+  service_count = 0
 
   # Number of processes to always keep waiting for more connections.
-  #process_min_avail = 0
+  process_min_avail = 4
 
   # If you set service_count=0, you probably need to grow this.
-  #vsz_limit = 64M
+  vsz_limit = 2G
 }
 
 service lmtp {
@@ -196,22 +195,27 @@ service dict {
   # For example: mode=0660, group=vmail and global mail_access_groups=vmail
   unix_listener dict {
     #mode = 0600
-    #user = 
-    #group = 
+    #user =
+    #group =
   }
 }
-
-
 
 plugin {
   #quota = dirsize:User quota
   quota = maildir:User quota
   #quota = dict:User quota::proxy::quota
   #quota = fs:User quota
-	
-  acl = vfile
-  acl_shared_dict = file:/var/lib/dovecot/db/shared-mailboxes.db
-
-  fts=solr
-  fts_solr = url=http://localhost/8983/solr/dovecot/
+  #
+  sieve_default = /var/mail/vhosts/default.sieve
+	acl = vfile
+	acl_shared_dict = file:/var/lib/dovecot/db/shared-mailboxes.db
 }
+
+# For better performance: https://doc.dovecot.org/configuration_manual/mail_location/Maildir/#core_setting-maildir_very_dirty_syncs
+maildir_very_dirty_syncs = yes
+
+# Also for performance cache auth
+auth_cache_size = 10MB
+auth_cache_ttl = 1 hour
+auth_cache_negative_ttl = 1 hour
+

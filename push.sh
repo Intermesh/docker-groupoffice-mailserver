@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
-docker build --no-cache . -t intermesh/groupoffice-mailserver:latest
 docker login
-docker push intermesh/groupoffice-mailserver:latest
+docker buildx build --push --platform linux/amd64,linux/arm64 --no-cache . -t intermesh/groupoffice-mailserver:latest
+
+#docker push intermesh/groupoffice-mailserver:latest
