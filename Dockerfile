@@ -7,7 +7,8 @@ ENV MYSQL_HOST db
 ENV POSTMASTER_EMAIL postmaster@example.com
 
 RUN apt-get update
-RUN apt-get install -y postfix postfix-mysql dovecot-imapd dovecot-mysql dovecot-lmtpd dovecot-sieve dovecot-managesieved dovecot-solr supervisor bash rsyslog nano
+RUN apt-get install -y postfix postfix-mysql dovecot-imapd dovecot-mysql dovecot-lmtpd dovecot-sieve \
+ dovecot-managesieved dovecot-solr supervisor bash rsyslog nano dovecot-fts-xapian
 
 #Add user for mail handling
 RUN useradd -r -u 150 -g mail -d /var/mail/vhosts -m -s /sbin/nologin -c "Virtual Mailbox" vmail
@@ -15,6 +16,7 @@ RUN useradd -r -u 150 -g mail -d /var/mail/vhosts -m -s /sbin/nologin -c "Virtua
 # Dovecot config
 ADD ./etc/dovecot/conf.d/99-groupoffice.conf.tpl /etc/dovecot/conf.d/99-groupoffice.conf.tpl
 ADD ./etc/dovecot/dovecot-sql.conf.ext.tpl /etc/dovecot/dovecot-sql.conf.ext.tpl
+ADD ./etc/dovecot/virtual/All/dovecot-virtual /etc/dovecot/virtual/All/dovecot-virtual
 
 #disable default system auth because it slows down the login
 RUN sed -i 's/!include auth-system.conf.ext/#!include auth-system.conf.ext/' /etc/dovecot/conf.d/10-auth.conf

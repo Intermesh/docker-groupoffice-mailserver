@@ -31,7 +31,7 @@ last_valid_uid = 150
 first_valid_gid = 8
 last_valid_gid = 8
 
-mail_plugins = quota acl
+mail_plugins = quota acl fts fts_xapian virtual
 
 postmaster_address = {postmaster}
 
@@ -65,7 +65,6 @@ protocol imap {
 
 protocol lmtp {
   postmaster_address = {postmaster}   # required
-  mail_plugins = quota sieve
   # Enable fsyncing for LMTP
   mail_fsync = optimized
 }
@@ -109,9 +108,9 @@ namespace inbox {
   }
 
   # If you have a virtual "All messages" mailbox:
-  #mailbox virtual/All {
-  #  special_use = \All
-  #}
+  mailbox virtual/All {
+    special_use = \All
+  }
 
   # If you have a virtual "Flagged" mailbox:
   #mailbox virtual/Flagged {
@@ -119,7 +118,7 @@ namespace inbox {
   #}
 }
 
-namespace {
+namespace shared {
 	type = shared
 	separator = /
 	prefix = shared/%%u/
@@ -129,6 +128,16 @@ namespace {
 	#location = maildir:%%h/Maildir:INDEX=~/Maildir/shared/%%u:INDEXPVT=~/Maildir/shared/%%u
 	subscriptions = no
 	list = children
+}
+
+
+namespace virtual {
+	prefix = virtual/
+    separator = /
+    hidden = yes
+    list = no
+    subscriptions = no
+    location = virtual:/etc/dovecot/virtual:INDEX=/var/mail/vhosts/%d/%n/virtual
 }
 
 service imap-login {
@@ -209,6 +218,22 @@ plugin {
   sieve_default = /var/mail/vhosts/default.sieve
 	acl = vfile
 	acl_shared_dict = file:/var/lib/dovecot/db/shared-mailboxes.db
+
+
+  fts = xapian
+  fts_xapian = partial=3 full=20 attachments=0 verbose=0
+  fts_autoindex = yes
+  fts_enforced = yes
+  fts_autoindex_exclude = \Trash
+  fts_autoindex_exclude2 = \Spam
+
+}
+
+service indexer-worker {
+  #Increase vsz_limit to 2GB or above.
+  #Or 0 if you have rather large memory usable on your server, which is preferred for performance)
+  vsz_limit = 2G
+  process_limit = 0
 }
 
 # For better performance: https://doc.dovecot.org/configuration_manual/mail_location/Maildir/#core_setting-maildir_very_dirty_syncs
@@ -218,4 +243,3 @@ maildir_very_dirty_syncs = yes
 auth_cache_size = 10MB
 auth_cache_ttl = 1 hour
 auth_cache_negative_ttl = 1 hour
-
