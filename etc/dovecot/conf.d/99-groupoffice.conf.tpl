@@ -94,17 +94,6 @@ namespace inbox {
   #location defaults to mail_location.
   inbox = yes
 
-
-  #mailbox name {
-    # auto=create will automatically create this mailbox.
-    # auto=subscribe will both create and subscribe to the mailbox.
-    #auto = no
-
-    # Space separated list of IMAP SPECIAL-USE attributes as specified by
-    # RFC 6154: \All \Archive \Drafts \Flagged \Junk \Sent \Trash
-    #special_use =
-  #}
-
   # These mailboxes are widely used and could perhaps be created automatically:
   mailbox Drafts {
     auto = subscribe
@@ -117,13 +106,16 @@ namespace inbox {
   mailbox Spam {
     auto = subscribe
     special_use = \Junk
-    autoexpunge = 30d
+
+    # Enable autoexpunge below to cleanup the Spam folder automatically
+    # autoexpunge = 30d
   }
 
   mailbox Trash {
     auto = subscribe
     special_use = \Trash
-    autoexpunge = 30d
+    # Enable autoexpunge below to cleanup the Trash folder automatically
+    # autoexpunge = 30d
   }
 
   # For \Sent mailboxes there are two widely used names. We'll mark both of
@@ -140,11 +132,6 @@ namespace inbox {
   mailbox virtual/All {
     special_use = \All
   }
-
-  # If you have a virtual "Flagged" mailbox:
-  #mailbox virtual/Flagged {
-  #  special_use = \Flagged
-  #}
 }
 
 namespace shared {
@@ -198,8 +185,6 @@ service lmtp {
   }
 }
 
-
-
 service auth {
   # auth_socket_path points to this userdb socket by default. It's typically
   # used by dovecot-lda, doveadm, possibly imap process, etc. Its default
@@ -215,26 +200,6 @@ service auth {
   # Postfix smtp-auth
   unix_listener /var/spool/postfix/private/auth {
     mode = 0666
-  }
-
-  # Auth process is run as this user.
-  #user = $default_internal_user
-}
-
-service auth-worker {
-  # Auth worker process is run as root by default, so that it can access
-  # /etc/shadow. If this isn't necessary, the user should be changed to
-  # $default_internal_user.
-  #user = root
-}
-
-service dict {
-  # If dict proxy is used, mail processes should have access to its socket.
-  # For example: mode=0660, group=vmail and global mail_access_groups=vmail
-  unix_listener dict {
-    #mode = 0600
-    #user =
-    #group =
   }
 }
 
