@@ -1,3 +1,6 @@
+# For testing
+# DOCKER_BUILDKIT=0 && docker buildx build --load . -t intermesh/groupoffice-mailserver:latest
+
 FROM debian:bookworm-slim
 
 ENV MYSQL_USER groupoffice
