@@ -39,7 +39,26 @@ auth_mechanisms = plain login
 
 #FOR DEVELOPMENT ONLY:
 disable_plaintext_auth = no
-!include auth-sql.conf.ext
+
+passdb {
+    driver = sql
+
+    # Path for SQL configuration file, see example-config/dovecot-sql.conf.ext
+    args = /etc/dovecot/dovecot-groupoffice-sql.conf.ext
+}
+
+# "prefetch" user database means that the passdb already provided the
+# needed information and there's no need to do a separate userdb lookup.
+# <doc/wiki/UserDatabase.Prefetch.txt>
+userdb {
+    driver = prefetch
+}
+
+# The userdb below is used only by lda.
+userdb {
+    driver = sql
+    args = /etc/dovecot/dovecot-groupoffice-sql.conf.ext
+}
 
 # Default to no fsyncing, lmtp and lda use optimized
 mail_fsync = never
@@ -64,7 +83,6 @@ protocol imap {
 }
 
 protocol lmtp {
-  postmaster_address = {postmaster}   # required
   # Enable fsyncing for LMTP
   mail_fsync = optimized
 }
@@ -89,18 +107,29 @@ namespace inbox {
 
   # These mailboxes are widely used and could perhaps be created automatically:
   mailbox Drafts {
+    auto = subscribe
     special_use = \Drafts
   }
   mailbox Junk {
     special_use = \Junk
   }
+
+  mailbox Spam {
+    auto = subscribe
+    special_use = \Junk
+    autoexpunge = 30d
+  }
+
   mailbox Trash {
+    auto = subscribe
     special_use = \Trash
+    autoexpunge = 30d
   }
 
   # For \Sent mailboxes there are two widely used names. We'll mark both of
   # them as \Sent. User typically deletes one of them if duplicates are created.
   mailbox Sent {
+    auto = subscribe
     special_use = \Sent
   }
   mailbox "Sent Messages" {
@@ -210,22 +239,29 @@ service dict {
 }
 
 plugin {
-  #quota = dirsize:User quota
-  quota = maildir:User quota
-  #quota = dict:User quota::proxy::quota
-  #quota = fs:User quota
-  #
-  sieve_default = /var/mail/vhosts/default.sieve
-	acl = vfile
-	acl_shared_dict = file:/var/lib/dovecot/db/shared-mailboxes.db
+    quota = maildir:User quota
+    sieve_default = /var/mail/vhosts/default.sieve
+    acl = vfile
+    acl_shared_dict = file:/var/lib/dovecot/db/shared-mailboxes.db
 
 
-  fts = xapian
-  fts_xapian = partial=3 full=20 attachments=0 verbose=0
-  fts_autoindex = yes
-  fts_enforced = yes
-  fts_autoindex_exclude = \Trash
-  fts_autoindex_exclude2 = \Spam
+    # fts is returned from the userdb and passdb sql database so it can be turned on per user
+    #fts = xapian
+    fts_xapian = partial=3 full=20 attachments=0 verbose=0
+
+    fts_enforced = no
+
+    # Proactively index mail as it is delivered or appended, not only when
+    # searching.
+    fts_autoindex = yes
+    fts_autoindex_exclude = \Trash
+    fts_autoindex_exclude2 = \Spam
+
+    # How many \Recent flagged mails a mailbox is allowed to have, before it
+    # is not autoindexed.
+    # This setting can be used to exclude mailboxes that are seldom accessed
+    # from automatic indexing.
+    fts_autoindex_max_recent_msgs=99
 
 }
 
@@ -238,6 +274,20 @@ service indexer-worker {
 
 # For better performance: https://doc.dovecot.org/configuration_manual/mail_location/Maildir/#core_setting-maildir_very_dirty_syncs
 maildir_very_dirty_syncs = yes
+
+# Mailbox list indexes can be used to optimize IMAP STATUS commands. They are
+# also required for IMAP NOTIFY extension to be enabled.
+# Recommended to use with the "autoexpunge" setting.
+mailbox_list_index = yes
+
+# Trust mailbox list index to be up-to-date. This reduces disk I/O at the cost
+# of potentially returning out-of-date results after e.g. server crashes.
+# The results will be automatically fixed once the folders are opened.
+mailbox_list_index_very_dirty_syncs = yes
+
+# Recommended when using the "autoexpunge" setting with sdbox or Maildir, as it avoids using stat() to find out the mail’s
+# saved-timestamp. With mdbox and obox formats this isn’t necessary, since the saved-timestamp is always available.
+mail_always_cache_fields = date.save
 
 # Also for performance cache auth
 auth_cache_size = 10MB
