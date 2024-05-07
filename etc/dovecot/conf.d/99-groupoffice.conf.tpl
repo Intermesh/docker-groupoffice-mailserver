@@ -1,7 +1,7 @@
 #Enable IMAP
 protocols = imap lmtp sieve
 
-default_vsz_limit = 2G
+default_vsz_limit = 1G
 
 #Enable the line below to enable external access for IMAP
 listen = *
@@ -174,7 +174,7 @@ service imap-login {
   process_min_avail = 4
 
   # If you set service_count=0, you probably need to grow this.
-  vsz_limit = 2G
+  vsz_limit = 1G
 }
 
 service lmtp {
