@@ -83,6 +83,7 @@ protocol imap {
 }
 
 protocol lmtp {
+  mail_plugins = $mail_plugins quota sieve
   # Enable fsyncing for LMTP
   mail_fsync = optimized
 }
