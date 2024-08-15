@@ -31,7 +31,7 @@ last_valid_uid = 150
 first_valid_gid = 8
 last_valid_gid = 8
 
-mail_plugins = quota acl fts fts_xapian virtual
+mail_plugins = quota quota_clone acl fts fts_xapian virtual
 
 postmaster_address = {postmaster}
 
@@ -204,8 +204,19 @@ service auth {
   }
 }
 
+dict {
+    mysql = mysql:/etc/dovecot/dovecot-dict-sql.conf.ext
+}
+
+
 plugin {
-    quota = maildir:User quota
+    quota = count:User quota
+
+    # This is required - it uses "virtual sizes" rather than "physical sizes"
+    # for quota counting:
+    quota_vsizes = yes
+    quota_clone_dict = proxy::mysql
+
     sieve_default = /var/mail/vhosts/default.sieve
     acl = vfile
     acl_shared_dict = file:/var/lib/dovecot/db/shared-mailboxes.db
@@ -229,6 +240,15 @@ plugin {
     # from automatic indexing.
     fts_autoindex_max_recent_msgs=99
 
+}
+
+# Avoid spending excessive time waiting for the quota calculation to finish
+# when mails' vsizes aren't already cached. If this many mails are opened,
+# finish the quota calculation on background in indexer-worker process. Mail
+# deliveries will be assumed to succeed, and explicit quota lookups will
+# return internal error. (v2.2.28+)
+protocol !indexer-worker {
+  mail_vsize_bg_after_count = 100
 }
 
 service indexer-worker {
