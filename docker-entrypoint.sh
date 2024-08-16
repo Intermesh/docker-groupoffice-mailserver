@@ -44,4 +44,12 @@ select_field = maildir\n\
 where_field = username\n\
 additional_conditions = and active = '1'" > /etc/postfix/mysql_virtual_mailbox_maps.cf
 
+
+cp /etc/opendkim.conf.tpl /etc/opendkim.conf
+sed -i 's/{dbHost}/'$MYSQL_HOST'/' /etc/dovecot/dovecot-groupoffice-sql.conf.ext && \
+sed -i 's/{dbName}/'$MYSQL_DATABASE'/' /etc/dovecot/dovecot-groupoffice-sql.conf.ext && \
+sed -i 's/{dbUser}/'$MYSQL_USER'/' /etc/dovecot/dovecot-groupoffice-sql.conf.ext && \
+sed -i 's/{dbPass}/'$MYSQL_PASSWORD'/' /etc/dovecot/dovecot-groupoffice-sql.conf.ext
+
+
 /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

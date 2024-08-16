@@ -11,7 +11,8 @@ ENV POSTMASTER_EMAIL postmaster@example.com
 
 RUN apt-get update
 RUN apt-get install -y postfix postfix-mysql dovecot-imapd dovecot-mysql dovecot-lmtpd dovecot-sieve \
- dovecot-managesieved dovecot-solr supervisor bash rsyslog nano dovecot-fts-xapian
+ dovecot-managesieved dovecot-solr supervisor bash rsyslog nano dovecot-fts-xapian opendkim opendkim-tools  \
+    libopendbx1-mysql
 
 #Add user for mail handling
 RUN useradd -r -u 150 -g mail -d /var/mail/vhosts -m -s /sbin/nologin -c "Virtual Mailbox" vmail
@@ -20,6 +21,9 @@ RUN useradd -r -u 150 -g mail -d /var/mail/vhosts -m -s /sbin/nologin -c "Virtua
 ADD ./etc/dovecot/conf.d/99-groupoffice.conf.tpl /etc/dovecot/conf.d/99-groupoffice.conf.tpl
 ADD ./etc/dovecot/dovecot-groupoffice-sql.conf.ext.tpl /etc/dovecot/dovecot-groupoffice-sql.conf.ext.tpl
 ADD ./etc/dovecot/virtual/All/dovecot-virtual /etc/dovecot/virtual/All/dovecot-virtual
+
+# Opendkim
+ADD ./etc/opendkim.conf.tpl /etc/opendkim.conf.tpl
 
 #disable default system auth because it slows down the login
 RUN sed -i 's/!include auth-system.conf.ext/#!include auth-system.conf.ext/' /etc/dovecot/conf.d/10-auth.conf
@@ -41,10 +45,10 @@ ADD ./etc/postfix/submission_header_checks /etc/postfix/submission_header_checks
 # About submission_header_checks:
 # https://askubuntu.com/questions/78163/when-sending-email-with-postfix-how-can-i-hide-the-sender-s-ip-and-username-in
 
-RUN postconf -e 'smtpd_sasl_auth_enable = yes' && \
+RUN postconf -e 'smtpd_sasl_auth_enable = no' && \
 postconf -e 'smtpd_sasl_type = dovecot' && \
 postconf -e 'smtpd_sasl_path = private/auth' && \
-postconf -e 'smtpd_sasl_authenticated_header = yes' && \
+postconf -e 'smtpd_sasl_authenticated_header = no' && \
 postconf -e 'smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_non_fqdn_sender, reject_non_fqdn_recipient, reject_unauth_destination, reject_unauth_pipelining, reject_invalid_hostname, reject_unknown_sender_domain permit' && \
 postconf -e 'smtpd_data_restrictions = reject_unauth_pipelining, reject_multi_recipient_bounce, permit' && \
 postconf -e 'smtpd_relay_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination' && \
@@ -63,6 +67,7 @@ postconf -e 'virtual_transport = lmtp:unix:private/dovecot-lmtp' && \
 postconf -e 'default_destination_concurrency_limit = 5' && \
 postconf -e 'relay_destination_concurrency_limit = 1' && \
 postconf -e 'message_size_limit = 20480000' && \
+postconf -e 'smtpd_milters = unix:opendkim/opendkim.sock' && \
 postconf -M submission/inet="submission   inet   n   -   n   -   -   smtpd" && \
 postconf -P "submission/inet/syslog_name=postfix/submission" && \
 postconf -P "submission/inet/smtpd_tls_security_level=encrypt" && \
@@ -77,7 +82,7 @@ postconf -P "submission/inet/smtpd_client_restrictions=permit_sasl_authenticated
 postconf -P "submission/inet/smtpd_recipient_restrictions=permit_mynetworks,permit_sasl_authenticated,reject" && \
 postconf -M subcleanup/unix="subcleanup   unix n    -       -       -       0       cleanup" && \
 postconf -P "subcleanup/unix/header_checks=regexp:/etc/postfix/submission_header_checks" && \
-postconf -P "submission/inet/smtpd_client_message_rate_limit=2" && \
+postconf -P "submission/inet/smtpd_client_message_rate_limit=10" && \
 postconf -P "submission/inet/anvil_rate_time_unit=60s" && \
 postconf -P "submission/inet/cleanup_service_name=subcleanup"
 
@@ -95,6 +100,14 @@ EXPOSE 4190
 
 RUN mkdir -p /var/mail/vhosts && chown vmail:mail /var/mail/vhosts
 ADD ./var/mail/vhosts/default.sieve /var/mail/vhosts/default.sieve
+
+
+# for accessing socket local:/run/opendkim/opendkim.sock
+RUN usermod -a -G postfix opendkim
+
+# run dir must exist
+RUN mkdir /var/spool/postfix/opendkim
+RUN chown opendkim:opendkim /var/spool/postfix/opendkim
 
 VOLUME /var/mail/vhosts
 
