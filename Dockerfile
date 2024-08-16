@@ -20,6 +20,7 @@ RUN useradd -r -u 150 -g mail -d /var/mail/vhosts -m -s /sbin/nologin -c "Virtua
 # Dovecot config
 ADD ./etc/dovecot/conf.d/99-groupoffice.conf.tpl /etc/dovecot/conf.d/99-groupoffice.conf.tpl
 ADD ./etc/dovecot/dovecot-groupoffice-sql.conf.ext.tpl /etc/dovecot/dovecot-groupoffice-sql.conf.ext.tpl
+ADD ./etc/dovecot/dovecot-dict-sql.conf.ext.tpl /etc/dovecot/dovecot-dict-sql.conf.ext.tpl
 ADD ./etc/dovecot/virtual/All/dovecot-virtual /etc/dovecot/virtual/All/dovecot-virtual
 
 # Opendkim
@@ -103,7 +104,7 @@ ADD ./var/mail/vhosts/default.sieve /var/mail/vhosts/default.sieve
 
 
 # for accessing socket local:/run/opendkim/opendkim.sock
-RUN usermod -a -G postfix opendkim
+RUN usermod -a -G opendkim postfix
 
 # run dir must exist
 RUN mkdir /var/spool/postfix/opendkim

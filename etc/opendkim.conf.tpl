@@ -4,7 +4,7 @@
 
 
 # for accessing socket local:/run/opendkim/opendkim.sock
-# usermod -a -G postfix opendkim
+# usermod -a -G opendkim postfix
 
 # run dir must exist
 # mkdir /var/spool/postfix/opendkim
