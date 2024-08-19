@@ -11,7 +11,7 @@ ENV POSTMASTER_EMAIL postmaster@example.com
 
 RUN apt-get update
 RUN apt-get install -y postfix postfix-mysql dovecot-imapd dovecot-mysql dovecot-lmtpd dovecot-sieve \
- dovecot-managesieved dovecot-solr supervisor bash rsyslog nano dovecot-fts-xapian opendkim opendkim-tools  \
+ dovecot-managesieved dovecot-solr supervisor bash rsyslog nano dovecot-fts-xapian opendkim \
     libopendbx1-mysql
 
 #Add user for mail handling

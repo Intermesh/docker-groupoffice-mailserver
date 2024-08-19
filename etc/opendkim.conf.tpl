@@ -1,6 +1,6 @@
 # https://www.mybluelinux.com/configure-opendkim-with-postfix-on-debian/
 
-# apt-get install opendkim opendkim-tools  libopendbx1-mysql
+# apt-get install opendkim libopendbx1-mysql
 
 
 # for accessing socket local:/run/opendkim/opendkim.sock
