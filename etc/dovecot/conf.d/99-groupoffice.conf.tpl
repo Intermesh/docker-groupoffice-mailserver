@@ -40,6 +40,16 @@ auth_mechanisms = plain login
 #FOR DEVELOPMENT ONLY:
 disable_plaintext_auth = no
 
+
+# For users that can login to all mailboxes of a domain
+auth_master_user_separator = *
+passdb {
+    driver = sql
+    args = /etc/dovecot/domain-owner-sql.conf.ext
+    master = yes
+    result_success = continue
+}
+
 passdb {
     driver = sql
 
@@ -220,7 +230,9 @@ plugin {
     sieve_default = /var/mail/vhosts/default.sieve
     acl = vfile
     acl_shared_dict = file:/var/lib/dovecot/db/shared-mailboxes.db
-
+    # This makes sure master/domain owner users can access all folders.
+    # See https://doc.dovecot.org/configuration_manual/authentication/master_users/
+    acl_user=%u
 
     # fts is returned from the userdb and passdb sql database so it can be turned on per user
     #fts = xapian
