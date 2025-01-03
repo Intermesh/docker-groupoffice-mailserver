@@ -45,7 +45,7 @@ disable_plaintext_auth = no
 auth_master_user_separator = *
 passdb {
     driver = sql
-    args = /etc/dovecot/domain-owner-sql.conf.ext
+    args = /etc/dovecot/groupoffice-domain-owner-sql.conf.ext
     master = yes
     result_success = continue
 }
@@ -54,7 +54,7 @@ passdb {
     driver = sql
 
     # Path for SQL configuration file, see example-config/dovecot-sql.conf.ext
-    args = /etc/dovecot/dovecot-groupoffice-sql.conf.ext
+    args = /etc/dovecot/groupoffice-sql.conf.ext
 }
 
 # "prefetch" user database means that the passdb already provided the
@@ -67,7 +67,7 @@ userdb {
 # The userdb below is used only by lda.
 userdb {
     driver = sql
-    args = /etc/dovecot/dovecot-groupoffice-sql.conf.ext
+    args = /etc/dovecot/groupoffice-sql.conf.ext
 }
 
 # Default to no fsyncing, lmtp and lda use optimized
@@ -215,7 +215,7 @@ service auth {
 }
 
 dict {
-    mysql = mysql:/etc/dovecot/dovecot-dict-sql.conf.ext
+    mysql = mysql:/etc/dovecot/groupoffice-dict-sql.conf.ext
 }
 
 
