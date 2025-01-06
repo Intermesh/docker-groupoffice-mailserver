@@ -8,7 +8,7 @@ user_query = SELECT \
     150 AS uid, 8 AS gid, \
     CONCAT('*:storage=', quota) AS quota_rule, \
     IF(fts, 'xapian', null) as fts, \
-    IF(fts, '+XFTS', '') as imap_capability, \
+    IF(fts, '+XFTS', null) as imap_capability, \
     'Trash Spam' as 'namespace/inbox/mailbox', \
     autoExpunge as 'namespace/inbox/mailbox/Trash/autoexpunge', \
     autoExpunge as 'namespace/inbox/mailbox/Spam/autoexpunge' \
@@ -22,7 +22,7 @@ password_query = SELECT \
     CONCAT('maildir:/var/mail/vhosts/', maildir) AS userdb_mail, \
     150 AS userdb_uid, 8 AS userdb_gid, \
     IF(fts, "xapian", null) as userdb_fts, \
-    IF(fts, "+XFTS", "") as userdb_imap_capability, \
+    IF(fts, "+XFTS", null) as userdb_imap_capability, \
     'Trash Spam' as 'namespace/inbox/mailbox', \
     autoExpunge as 'namespace/inbox/mailbox/Trash/autoexpunge', \
     autoExpunge as 'namespace/inbox/mailbox/Spam/autoexpunge' \
